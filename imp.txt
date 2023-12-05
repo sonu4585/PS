@@ -1,0 +1,56 @@
+import tweepy
+from textblob import TextBlob
+
+def authenticate_twitter_api():
+    # Add your Twitter API keys here
+    consumer_key = "YOUR_CONSUMER_KEY"
+    consumer_secret = "YOUR_CONSUMER_SECRET"
+    access_token = "YOUR_ACCESS_TOKEN"
+    access_token_secret = "YOUR_ACCESS_TOKEN_SECRET"
+
+    # Authenticate with Twitter API
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
+    
+    return api
+
+def get_public_tweets(api, keyword, count=100):
+    # Fetch tweets containing the keyword
+    public_tweets = tweepy.Cursor(api.search, q=keyword, lang="en").items(count)
+    return public_tweets
+
+def analyze_sentiment(text):
+    # Analyze sentiment using TextBlob
+    analysis = TextBlob(text)
+    return analysis.sentiment.polarity
+
+def main():
+    # Authenticate with Twitter API
+    api = authenticate_twitter_api()
+
+    # Ask user for a keyword
+    keyword = input("Enter a keyword to analyze sentiment: ")
+
+    # Get public tweets containing the keyword
+    public_tweets = get_public_tweets(api, keyword)
+
+    # Analyze sentiment for each tweet and calculate overall sentiment
+    overall_sentiment = 0
+    tweet_count = 0
+
+    for tweet in public_tweets:
+        print(f"{tweet.user.screen_name}: {tweet.text}")
+        sentiment_score = analyze_sentiment(tweet.text)
+        overall_sentiment += sentiment_score
+        tweet_count += 1
+
+    # Calculate average sentiment
+    if tweet_count > 0:
+        average_sentiment = overall_sentiment / tweet_count
+        print(f"\nAverage sentiment for {tweet_count} tweets: {average_sentiment:.2f}")
+    else:
+        print("No tweets found for the given keyword.")
+
+if __name__ == "__main__":
+    main()
